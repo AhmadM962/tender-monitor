@@ -133,7 +133,11 @@ def main():
     import monitor as m  # noqa: E402
     items = m.parse_joneps(JONEPS_SAMPLE, "https://www.joneps.gov.jo/ep/invt/x.do", 12)
     check("JONEPS rows parsed (stage-bar rows skipped)", len(items) == 2, f"got {len(items)}")
-    check("JONEPS detail link built from fn_goDetail args", any("tendNo=2026004485" in i["url"] for i in items))
+    check("JONEPS goods tender links to GoodsDetails.do with all fn_goDetail args",
+          any("/ep/invt/GoodsDetails.do?tendNo=2026004485&tendSeq=00" in i["url"] and "tendMthodCd=EP0021" in i["url"]
+              and "invtYn=Y" in i["url"] for i in items))
+    check("JONEPS works tender (EP1312) links to WorkDetails.do",
+          any("/ep/invt/WorkDetails.do?tendNo=2026004465" in i["url"] for i in items))
     check("JONEPS item carries title + entity + type + deadline",
           any("نظام حماية الشبكة" in i["title"] and "دائرة المشتريات الحكومية" in i["title"]
               and "27/10/2026" in i["title"] for i in items))

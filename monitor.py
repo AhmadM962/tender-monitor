@@ -239,12 +239,27 @@ def parse_table(html_text: str, base_url: str, min_title_len: int, src: dict = N
     return items
 
 
-def _joneps_detail_url(base_url: str, tend_no: str, tend_seq: str) -> str:
-    return urljoin(
-        base_url,
-        f"/ep/invt/selectDetailTendInvitAL.do?tendNo={tend_no}&tendSeq={tend_seq}"
-        f"&menuId=EP03000000&screenType=DETAIL_ALL_USERS",
-    )
+def _joneps_detail_url(base_url: str, args: list) -> str:
+    """Browser link to a tender, mirroring JONEPS's own fn_goDetail(tendNo,
+    tendSeq, frameworkAgreementSeq, tendCategCd, workType, intrlLocalTypeCd,
+    tendMthodCd, tendTypeCd1): the page depends on the tender category
+    (EP1311 goods/services, EP1312 works, EP1313 medicines) and method
+    (EP0022 pre-qualification / EP5021 EOI open the works page).
+    Verified in a browser 2026-11-04 (opens the tender's tabbed page)."""
+    a = [x.strip() for x in args] + [""] * 8
+    tend_no, tend_seq, fa_seq, categ, work_type, local_cd, method, type1 = a[:8]
+    if categ == "EP1313":
+        page = "MedicineDetails.do"
+    elif categ == "EP1312" or method in ("EP0022", "EP5021"):
+        page = "WorkDetails.do"
+    elif categ == "EP1311":
+        page = "GoodsDetails.do" if type1 == "EP0011" else "ServiceDetails.do"
+    else:
+        page = "WorkUnspscDetails.do"
+    q = (f"tendNo={tend_no}&tendSeq={tend_seq or '00'}&frameworkAgreementSeq={fa_seq}"
+         f"&tendCategCd={categ}&workType={work_type}&intrlLocalTypeCd={local_cd}"
+         f"&tendMthodCd={method}&invtYn=Y&searchConditions=")
+    return urljoin(base_url, f"/ep/invt/{page}?{q}")
 
 
 def parse_joneps(html_text: str, base_url: str, min_title_len: int, src: dict = None) -> list:
@@ -281,11 +296,11 @@ def parse_joneps(html_text: str, base_url: str, min_title_len: int, src: dict = 
         seen.add((tend_no, tend_seq))
         items.append(
             {
-                "title": f"{title} — {entity} — {ttype} — deadline {deadline}",
+                "title": f"{title} — {entity} — {ttype} — deadline {deadline} — No. {tend_no}-{tend_seq}",
                 "match_text": title,  # keywords look at the tender name only, never the entity name
                 "type": ttype,
                 "key": f"{tend_no}-{tend_seq}",
-                "url": _joneps_detail_url(base_url, tend_no, tend_seq),
+                "url": _joneps_detail_url(base_url, args),
             }
         )
 
@@ -294,7 +309,7 @@ def parse_joneps(html_text: str, base_url: str, min_title_len: int, src: dict = 
             items.append(
                 {
                     "title": f"JONEPS tender {m.group(1)}",
-                    "url": _joneps_detail_url(base_url, m.group(1), "00"),
+                    "url": base_url,  # no fn_goDetail args available - link the list
                 }
             )
     if not items:
