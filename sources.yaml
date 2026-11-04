@@ -1,0 +1,370 @@
+# ============================================================================
+# Jordan Tender Monitor - source list
+# ----------------------------------------------------------------------------
+# parser: generic  -> works for the shared gov platform (/AR/Modules/Tenders),
+#                     WordPress sites, universities, etc.
+# parser: joneps   -> the JONEPS public tender invitation list
+# enabled: false   -> no tender page found / entity not verified yet; flip to
+#                     true once you confirm the URL in a browser.
+# "status" is a human note only - the script ignores it.
+# ============================================================================
+
+sources:
+
+  # ------------------------- CENTRAL PORTALS (high value) -------------------
+  - id: joneps_v2   # v2 = identity is tender no + sequence (deadline/title amendments no longer re-alert); first run re-baselines silently
+    name: "JONEPS - national e-procurement (GPD + GTD, covers JSC, MFA & others)"
+    url: "https://www.joneps.gov.jo/ep/invt/selectListTendInvitAL.do?menuId=EP03000000&upperMenuId=EP03020000&subMenuId=EP03020100"
+    parser: joneps
+    enabled: true
+    pages: 10   # FALLBACK ONLY: used when the bulk POST fails (monitor tries the POST first)
+    status: upgraded 2026-11-02 - bulk POST (csrf + recordCountPerPage=2000, window today-35d..+95d) pulls the FULL active list (~750 tenders) in one request; see joneps_data/joneps_search_request.md
+
+  - id: gtd
+    name: "Government Tenders Directorate (works & technical services)"
+    url: "https://www.gtd.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: central works tenders; also publishes on JONEPS
+
+  - id: modee
+    name: "Ministry of Digital Economy & Entrepreneurship (central gov IT tenders)"
+    url: "https://modee.gov.jo/AR/modules/advancedtenders"
+    parser: generic
+    enabled: true
+    status: verified - publishes cross-government ICT tenders (not in your accounts but posts tenders for them)
+
+  - id: modee_simple
+    name: "MoDEE - simple tenders view"
+    url: "https://www.modee.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: false
+    status: disabled 2026-11-02 - live test showed identical 14 items as the advanced view -> would double-alert every MoDEE tender
+
+  # ------------------------- MINISTRIES (1-15) -------------------------------
+  - id: mit
+    name: "1. Ministry of Industry, Trade & Supply"
+    url: "https://www.mit.gov.jo/AR/Modules/tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: mpwh
+    name: "2. Ministry of Public Works & Housing"
+    url: "https://www.mpwh.gov.jo/ar/modules/tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: mof
+    name: "3. Ministry of Finance"
+    url: "https://www.mof.gov.jo/AR/Pages/العطاءات_المحلية_والخاصة"
+    parser: generic
+    enabled: true
+    status: verified (Arabic URL - requests handles it)
+
+  - id: moin
+    name: "4. Ministry of Investment"
+    url: "https://www.moin.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path - archive confirmed at /Ar/Modules/ArchivedTenders; verify
+
+  - id: mfa
+    name: "5. Ministry of Foreign Affairs (announcements page - no tenders page exists)"
+    url: "https://www.mfa.gov.jo/announcementsPreview/13"
+    parser: generic
+    enabled: true
+    status: MFA has no tenders page; its IT tenders appear on MoDEE/JONEPS (already covered)
+
+  - id: mol
+    name: "6. Ministry of Labour"
+    url: "https://mol.gov.jo/AR/Modules/tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: awqaf
+    name: "7. Ministry of Awqaf & Islamic Affairs"
+    url: "https://www.awqaf.gov.jo/ar/modules/tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: moe_intl
+    name: "8a. Ministry of Education - international tenders (Queen Rania Center has no separate site)"
+    url: "https://moe.gov.jo/international-tenders"
+    parser: generic
+    enabled: true
+    status: verified; QRC ICT tenders usually go via MoDEE/JONEPS
+
+  - id: moe_buildings
+    name: "8b. Ministry of Education - buildings & projects tenders"
+    url: "https://moe.gov.jo/tenders-section1/3"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: mop
+    name: "9. Ministry of Planning & International Cooperation"
+    url: "https://www.mop.gov.jo/ar/modules/tenders"
+    parser: generic
+    enabled: true
+    status: verified; also posts on JONEPS
+
+  - id: moy
+    name: "10. Ministry of Youth"
+    url: "https://www.moy.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path - tenders menu confirmed on homepage; verify
+
+  - id: mota
+    name: "11. Ministry of Tourism & Antiquities"
+    url: "https://www.mota.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path; verify
+
+  - id: mola
+    name: "12. Ministry of Local Administration"
+    url: "https://www.mola.gov.jo/Ar/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: culture
+    name: "13. Ministry of Culture"
+    url: "https://culture.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path - footer العطاءات link confirmed; verify
+
+  - id: mogc
+    name: "14. Ministry of Government Communication"
+    url: "https://mogc.gov.jo/AR/List/العـطاءات"
+    parser: generic
+    enabled: true
+    status: verified (note the tatweel character in the Arabic slug - keep as is)
+
+  - id: mosd
+    name: "15. Ministry of Social Development"
+    url: "https://www.mosd.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  # ------------------- AUTHORITIES / COMMISSIONS / COMPANIES -----------------
+  - id: carc_tenders
+    name: "16. Civil Aviation Regulatory Commission - current tenders"
+    url: "https://carc.gov.jo/ar/tenders/13"
+    parser: generic
+    css: "div.views-row"   # Drupal tender rows only - menus/news can't leak in
+    enabled: true
+    status: "verified 2026-11-04 by browser session. Empty list is NORMAL here (0 items is not a failure). Tenders move to the archive (/ar/tenders/12) on their closing day. CARC also publishes on JONEPS (22 tenders since 2024), so JONEPS is the backup"
+  - id: gam
+    name: "17. Greater Amman Municipality (news page - no dedicated tenders page found)"
+    url: "https://www.amman.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - GAM was slated for JONEPS onboarding; check JONEPS entity filter
+
+  - id: ase
+    name: "18. Amman Stock Exchange"
+    url: "https://www.exchange.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - no tenders page found; check site then enable
+
+  - id: jsc
+    name: "19. Jordan Securities Commission"
+    url: "https://www.jsc.gov.jo/"
+    parser: generic
+    enabled: false
+    status: no tenders page - likely publishes via JONEPS/GPD (covered by joneps source)
+
+  - id: cpf
+    name: "20. Crown Prince Foundation"
+    url: "https://www.cpf.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - posts RFPs ad hoc; verify then enable
+
+  - id: silos
+    name: "21. Jordan Silos & Supply General Company"
+    url: "https://www.silos.com.jo/"
+    parser: generic
+    enabled: false
+    status: domain unconfirmed; grain tenders go via Ministry of Industry & Trade (covered)
+
+  - id: yw_tenders
+    name: "22. Yarmouk Water Company - current tenders"
+    url: "https://www.yw.com.jo/Tenders.aspx"
+    parser: table
+    css: "table#ContentPlaceHolder1_GridView1 tr"
+    columns: {no: 0, name: 1, deadline: 6}
+    enabled: true
+    status: "verified 2026-11-04 by browser session. Page 1 = 40 newest rows (~6 weeks) - enough at twice daily. Later pages need ASP.NET postback; server resets fast crawlers, so we only read page 1. NOT on JONEPS (0 tenders) - this page is the only source. Dates are hand-typed (e.g. 2/112026)"
+  - id: nctd
+    name: "23. National Company for Tourism Development"
+    url: ""
+    parser: generic
+    enabled: false
+    status: official website could not be identified
+
+  - id: npc
+    name: "24. National Petroleum Company"
+    url: "https://www.npc.com.jo/EN/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  # ------------------------------ UNIVERSITIES --------------------------------
+  - id: anu
+    name: "25. Ajloun National University"
+    url: "https://www.anu.edu.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - no tenders page found yet
+
+  - id: ahu_tenders
+    name: "26. Al-Hussein Bin Talal University - tender announcements"
+    url: "https://www.ahu.edu.jo/TenderAr.aspx?type=1&ID=4924&Ic=0"
+    parser: table
+    css: "#ContentPlaceHolder1_Panel4924 tr"
+    columns: {no: 0, name: 1, posted: 2, opening: 5}
+    enabled: true
+    status: "verified 2026-11-04 by browser session. The site's date labels look swapped, so the alert shows posted + opening dates, not a 'deadline'. Tender numbers are reused across rounds -> identity is number + title. Also on JONEPS since 2026"
+  - id: junet
+    name: "27. Jordanian Universities Network (شركة شبكة الجامعات)"
+    url: "https://www.junet.edu.jo/"
+    parser: generic
+    enabled: false
+    status: domain unconfirmed; verify then enable
+
+  - id: yu
+    name: "28. Yarmouk University (e-tendering portal)"
+    url: "https://tendering.yu.edu.jo/Tendering/"
+    parser: generic
+    enabled: true
+    status: verified - live portal with 2026 tenders
+
+  - id: aabu
+    name: "36. Al al-Bayt University"
+    url: "https://aabu.edu.jo/AR/Departments/tenders/Pages/Announcements.aspx"
+    parser: generic
+    enabled: true
+    status: verified
+
+  # --------------------------- OTHER GOV ENTITIES -----------------------------
+  - id: jiacc
+    name: "29. Integrity & Anti-Corruption Commission"
+    url: "https://jiacc.gov.jo/Ar/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: petra
+    name: "30. Jordan News Agency - Petra"
+    url: "https://petra.gov.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - no tenders page found
+
+  - id: jaec
+    name: "31. Jordan Atomic Energy Commission"
+    url: "https://jaec.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: sjd
+    name: "32. Supreme Judge Department"
+    url: "https://www.sjd.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path; verify (script will report if 404)
+
+  - id: jrms
+    name: "33. Royal Medical Services"
+    url: "https://jrms.jaf.mil.jo/"
+    parser: generic
+    enabled: false
+    status: unverified - military procurement usually via JAF channels
+
+  - id: rjgc
+    name: "34. Royal Jordanian Geographic Centre"
+    url: "https://www.rjgc.gov.jo/"
+    parser: generic
+    enabled: false
+    status: unverified; verify then enable (try /AR/Modules/Tenders)
+
+  - id: jpsf
+    name: "35. Jordan Postal Saving Fund"
+    url: ""
+    parser: generic
+    enabled: false
+    status: official website could not be identified
+
+  - id: classic_fashion
+    name: "37. Classic Fashion (private company)"
+    url: ""
+    parser: generic
+    enabled: false
+    status: private exporter - no public tenders page expected
+
+  - id: dos
+    name: "38. Department of Statistics"
+    url: "https://dosweb.dos.gov.jo/ar/tender/"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: jfda
+    name: "39. Jordan Food & Drug Administration"
+    url: "https://jfda.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: gpd
+    name: "40. Government Procurement Department (tenders live on JONEPS)"
+    url: "https://gpd.gov.jo/"
+    parser: generic
+    enabled: false
+    status: GPD site is archival - current tenders are on JONEPS (covered by joneps source)
+
+  - id: dls
+    name: "41. Department of Lands & Survey"
+    url: "https://www.dls.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path; verify (script will report if 404)
+
+  - id: spac
+    name: "42. Public Service & Administration Authority"
+    url: "https://spac.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path - العطاءات header link confirmed; verify
+
+  - id: trc
+    name: "43. Telecommunications Regulatory Commission"
+    url: "https://trc.gov.jo/Ar/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: verified
+
+  - id: iec
+    name: "44. Independent Election Commission"
+    url: "https://www.iec.jo/"
+    parser: generic
+    enabled: false
+    status: unverified; verify then enable
+
+  - id: ccd
+    name: "45. Companies Control Department"
+    url: "https://www.ccd.gov.jo/AR/Modules/Tenders"
+    parser: generic
+    enabled: true
+    status: guessed standard path; verify (script will report if 404)

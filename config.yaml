@@ -1,0 +1,442 @@
+# ============================================================================
+# Jordan Tender Monitor - behaviour & keyword configuration
+# ----------------------------------------------------------------------------
+# TWO-TIER MATCHING (re-calibrated 2026-11-04 on 11,199 real JONEPS tenders
+# + the live dry-run of 2026-11-04):
+#   include    STRONG terms - unambiguous IT/security -> always starred
+#   weak       generic terms (نظام, system, digital, شبكة...) -> starred only
+#              when the title has NO weak_veto term
+#   weak_veto  other-domain words (fire, HVAC, medical, roads, water...).
+#              A veto NEVER cancels a strong hit.
+#   skip_types tender types never starred (medicines)
+#   exclude    hard veto on everything - keep EMPTY unless you are sure
+# Results: core-IT recall 94.3% on Arabic list titles (same as before),
+# works-tender noise 6.8% -> 1.8%, total starred 15.8% -> 13%.
+# On the live 2026-11-04 JONEPS batch: 24 starred -> 13, all 11 removed
+# were non-IT (fire systems, HVAC, medical gas, CT scanner, roads...).
+# GOTCHA learned: matching is substring-based, so a veto word must not hide
+# inside an IT word (طبي is inside تطبيق!) - always re-run keyword_check.
+# Keywords never hide a tender: unstarred new tenders are still emailed.
+# Re-check after edits:  python keyword_check.py joneps_data\harvest.csv
+# ============================================================================
+
+min_title_length: 12
+delay_between_sources_sec: 2
+alert_on_first_run: false
+notify:
+  show_unmatched: true
+  send_when_unmatched_only: true
+  send_error_reports: false
+keywords:
+  include:
+  - cyber
+  - security
+  - firewall
+  - SIEM
+  - SOC
+  - EDR
+  - XDR
+  - MDR
+  - DLP
+  - data loss
+  - data protection
+  - endpoint
+  - antivirus
+  - anti-virus
+  - penetration
+  - vulnerab
+  - phishing
+  - WAF
+  - NAC
+  - PAM
+  - IAM
+  - encryption
+  - PKI
+  - ISO 27001
+  - ISO27001
+  - GRC
+  - microsegmentation
+  - multi-factor
+  - MFA
+  - router
+  - wireless
+  - wi-fi
+  - wifi
+  - VPN
+  - load balanc
+  - server
+  - SAN
+  - NAS
+  - backup
+  - disaster recovery
+  - replication
+  - virtualization
+  - virtualisation
+  - vmware
+  - hyper-v
+  - data center
+  - datacenter
+  - cloud
+  - UPS
+  - CCTV
+  - hardware
+  - computer
+  - computing
+  - laptop
+  - notebook
+  - PC
+  - PCs
+  - workstation
+  - barcode
+  - internet
+  - intranet
+  - MPLS
+  - sd-wan
+  - voip
+  - ip phone
+  - telecom
+  - software
+  - website
+  - database
+  - ERP
+  - CRM
+  - GIS
+  - LIMS
+  - DMS
+  - disk
+  - solid state
+  - RAM
+  - SSD
+  - HDD
+  - dongle
+  - artificial intelligence
+  - palo alto
+  - paloalto
+  - fortinet
+  - fortigate
+  - forcepoint
+  - cisco
+  - F5
+  - veeam
+  - trend micro
+  - kaspersky
+  - sophos
+  - symantec
+  - microsoft
+  - dell
+  - HPE
+  - lenovo
+  - nutanix
+  - citrix
+  - imperva
+  - tenable
+  - qualys
+  - splunk
+  - crowdstrike
+  - sentinelone
+  - zscaler
+  - oracle
+  - akamai
+  - bitdefender
+  - dynatrace
+  - odoo
+  - SAP
+  - huawei
+  - juniper
+  - aruba
+  - mikrotik
+  - sonicwall
+  - checkpoint
+  - check point
+  - barracuda
+  - netapp
+  - commvault
+  - acronis
+  - manageengine
+  - solarwinds
+  - zabbix
+  - grafana
+  - d-link
+  - tp-link
+  - VR
+  - أمن سيبراني
+  - الأمن السيبراني
+  - أمن المعلومات
+  - حماية البيانات
+  - حماية المعلومات
+  - حماية الشبك
+  - جدار ناري
+  - جدران نارية
+  - الجدار الناري
+  - ثغرات
+  - فيروسات
+  - تشفير
+  - نقاط النهاية
+  - حماية استباقية
+  - خوادم
+  - خادم
+  - سيرفر
+  - نسخ احتياطي
+  - النسخ الاحتياطي
+  - استعادة البيانات
+  - مركز بيانات
+  - مراكز البيانات
+  - مركز البيانات
+  - داتا سنتر
+  - حوسبة
+  - حوسبي
+  - سحابية
+  - سحابي
+  - السحابة
+  - برمجيات
+  - تكنولوجيا المعلومات
+  - تقنية المعلومات
+  - حاسوب
+  - حواسيب
+  - حاسبات
+  - كمبيوتر
+  - لابتوب
+  - لاب توب
+  - جهاز محمول
+  - أجهزة محمولة
+  - تابلت
+  - تابليت
+  - أرشفة
+  - رقمنة
+  - التحول الرقمي
+  - انترنت
+  - ذكاء اصطناعي
+  - الذكاء الاصطناعي
+  - تجهيزات حوسبية
+  - رامات
+  - اقراص صلبة
+  - سيسكو
+  - مايكروسوفت
+  - اوراكل
+  - ربط الفروع
+  - الربط الشبكي
+  - ممغنطة
+  - حضور وانصراف
+  - نظام معلومات
+  - انظمة معلومات
+  - أنظمة المعلومات
+  - انظمة محوسبة
+  - أنظمة محوسبة
+  - نظام محوسب
+  - محوسب
+  - كاميرات مراقبة
+  - أنظمة مراقبة
+  - نظام مراقبة الكتروني
+  - مراقبة تلفزيونية
+  - تخزين البيانات
+  - وحدات تخزين
+  - network security
+  - network switch
+  - core switch
+  - access switch
+  - data storage
+  - storage system
+  - ups system
+  - رخص برمجيات
+  - رخص مايكروسوفت
+  - تراخيص برمجيات
+  - ترخيص برمجيات
+  - رخص ويندوز
+  - رخص نظام
+  - تجديد رخص
+  - تجديد تراخيص
+  - ادارة الشبكة
+  - إدارة الشبكة
+  - شبكة داخلية
+  - الشبكة الداخلية
+  - شبكات الحاسوب
+  - شبكة الحاسوب
+  - الربط الالكتروني
+  - حماية الشبكة
+  - الاجهزة الطرفية
+  - الأجهزة الطرفية
+  - أجهزة حماية
+  - اجهزة حماية
+  - اجهزة الحماية
+  - أجهزة الحماية
+  - mobile application
+  - web application
+  - information system
+  - management system
+  - monitoring system
+  - اختراق
+  - اختبار الاختراق
+  - فحص الاختراق
+  - جدار حماية
+  - جدار الحماية
+  - جدران الحماية
+  - تطبيق الهاتف
+  - تطبيقات الهواتف
+  - تطبيقات الهاتف
+  - تطبيق الموبايل
+  - تطبيقات الموبايل
+  - تطبيقات الويب
+  - بوابة الويب
+  - amazon
+  - aws
+  - azure
+  - google cloud
+  - نظام الكتروني
+  - نظام إلكتروني
+  - انظمة رقمية
+  - أنظمة رقمية
+  - نظام كاميرات
+  - امازون
+  - أمازون
+  exclude: []
+  weak:
+  - secure
+  - threat
+  - identity
+  - authentication
+  - infrastructure
+  - network
+  - switch
+  - storage
+  - hosting
+  - surveillance
+  - access control
+  - license
+  - licence
+  - scanner
+  - printer
+  - tape
+  - system
+  - platform
+  - portal
+  - digital
+  - data
+  - smart
+  - robot
+  - interactive
+  - طرفية
+  - هجمات
+  - تهديدات
+  - مصادقة
+  - بنية تحتية
+  - البنية التحتية
+  - تخزين
+  - نظام
+  - انظمة
+  - منصة
+  - منصات
+  - تطبيقات
+  - تطبيق
+  - برنامج
+  - برامج
+  - تراخيص
+  - رخص
+  - رخصة
+  - ترخيص
+  - الدعم الفني
+  - دعم فني
+  - صيانة أجهزة
+  - صيانة انظمة
+  - عقد صيانة
+  - عقود صيانة
+  - كاميرات
+  - كاميرا
+  - رقمي
+  - رقمية
+  - اتصال
+  - شبكة
+  - شبكات
+  - بيانات
+  - افتراضي
+  - طابعة
+  - طابعه
+  - طابعات
+  - ماسح
+  - سكانر
+  - سكانرات
+  - شاشة
+  - شاشات
+  - مقسم
+  - سنترال
+  - بصمة
+  - تفاعلية
+  - حبر
+  - أحبار
+  - الكترون
+  - هارد
+  - ذاكرة
+  - خطوط الربط
+  - تبادل المعلومات
+  - نقاط بيع
+  - آلة تصوير
+  - اله تصوير
+  - روبوت
+  - عدادات ذكية
+  weak_veto:
+  - حريق
+  - اطفاء
+  - إطفاء
+  - انذار
+  - إنذار
+  - تكييف
+  - مكيفات
+  - تبريد
+  - تدفئة
+  - غازات
+  - الغاز
+  - طبية
+  - الطبية
+  - medical
+  - مستلزمات طبية
+  - ct
+  - mri
+  - x-ray
+  - ultrasound
+  - thermometer
+  - urodynamic
+  - مختبرات طبية
+  - مياه
+  - الصرف الصحي
+  - صرف صحي
+  - امطار
+  - الأمطار
+  - طرق
+  - الطرق
+  - الري
+  - مصاعد
+  - مصعد
+  - اشارات ضوئية
+  - الإشارات الضوئية
+  - انارة
+  - إنارة
+  - كهرباء
+  - الكهرباء
+  - الورق
+  - ورق حراري
+  - قرطاسية
+  - اثاث
+  - أثاث
+  - تنظيف
+  - وقود
+  - مركبات
+  - سيارات
+  - زراعي
+  - ابار
+  - آبار
+  - سياحي
+  - فعالية
+  - مؤتمر
+  - حفل
+  - تلزيم
+  - فندق
+  - ضيافة
+  - طباعة كتب
+  - مطبوعات
+  - الطبي
+  - اجهزة طبية
+  - أجهزة طبية
+  - الضوئية
+  - اشارات المرور
+  - الإشارات المرورية
+  skip_types:
+  - أدوية
