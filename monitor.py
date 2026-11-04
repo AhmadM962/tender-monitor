@@ -521,7 +521,7 @@ def render_email(matched, unmatched, errors, cfg) -> str:
 # Main
 # ----------------------------------------------------------------------------
 
-def run(dry_run: bool = False):
+def run(dry_run: bool = False, only_cloud_blocked: bool = False):
     cfg = load_yaml(CONFIG_FILE) or {}
     sources = load_yaml(SOURCES_FILE)["sources"]
     min_title_len = int(cfg.get("min_title_length", 12))
@@ -537,8 +537,17 @@ def run(dry_run: bool = False):
     matched, unmatched, errors = [], [], []
     attempted = 0
 
+    in_cloud = os.environ.get("GITHUB_ACTIONS") == "true"
     for src in sources:
         if not src.get("enabled", True):
+            continue
+        # `cloud_blocked: true` = the site refuses GitHub's (non-Jordanian)
+        # servers. The cloud skips it; a machine in Jordan covers it with
+        # `python monitor.py --only-cloud-blocked`.
+        if in_cloud and src.get("cloud_blocked"):
+            print(f"[skip] {src['name']} - blocked from cloud, covered by the local run")
+            continue
+        if only_cloud_blocked and not src.get("cloud_blocked"):
             continue
         # Fail fast if the network can't reach Jordan at all (e.g. a cloud
         # runner outside Jordan being geo-blocked): don't spend an hour
@@ -668,6 +677,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="no email, no state save")
     ap.add_argument("--test-email", action="store_true", help="send a test email and exit")
+    ap.add_argument("--only-cloud-blocked", action="store_true",
+                    help="scan only sources marked cloud_blocked (run this on a PC in Jordan)")
     args = ap.parse_args()
 
     if args.test_email:
@@ -677,7 +688,7 @@ def main():
         )
         sys.exit(0 if ok else 1)
 
-    sys.exit(run(dry_run=args.dry_run))
+    sys.exit(run(dry_run=args.dry_run, only_cloud_blocked=args.only_cloud_blocked))
 
 
 if __name__ == "__main__":

@@ -95,6 +95,7 @@ sources:
     name: "8a. Ministry of Education - international tenders (Queen Rania Center has no separate site)"
     url: "https://moe.gov.jo/international-tenders"
     parser: generic
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: verified; QRC ICT tenders usually go via MoDEE/JONEPS
 
@@ -102,6 +103,7 @@ sources:
     name: "8b. Ministry of Education - buildings & projects tenders"
     url: "https://moe.gov.jo/tenders-section1/3"
     parser: generic
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: verified
 
@@ -109,6 +111,7 @@ sources:
     name: "9. Ministry of Planning & International Cooperation"
     url: "https://www.mop.gov.jo/ar/modules/tenders"
     parser: generic
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: verified; also posts on JONEPS
 
@@ -116,6 +119,7 @@ sources:
     name: "10. Ministry of Youth"
     url: "https://www.moy.gov.jo/AR/Modules/Tenders"
     parser: generic
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: guessed standard path - tenders menu confirmed on homepage; verify
 
@@ -160,6 +164,7 @@ sources:
     url: "https://carc.gov.jo/ar/tenders/13"
     parser: generic
     css: "div.views-row"   # Drupal tender rows only - menus/news can't leak in
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: "verified 2026-11-04 by browser session. Empty list is NORMAL here (0 items is not a failure). Tenders move to the archive (/ar/tenders/12) on their closing day. CARC also publishes on JONEPS (22 tenders since 2024), so JONEPS is the backup"
   - id: gam
@@ -233,6 +238,7 @@ sources:
     parser: table
     css: "#ContentPlaceHolder1_Panel4924 tr"
     columns: {no: 0, name: 1, posted: 2, opening: 5}
+    cloud_blocked: true   # refuses GitHub servers (2026-11-04) - scanned by the local PC run
     enabled: true
     status: "verified 2026-11-04 by browser session. The site's date labels look swapped, so the alert shows posted + opening dates, not a 'deadline'. Tender numbers are reused across rounds -> identity is number + title. Also on JONEPS since 2026"
   - id: junet

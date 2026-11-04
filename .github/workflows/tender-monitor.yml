@@ -48,5 +48,13 @@ jobs:
           git add state/seen.json
           git diff --cached --quiet && exit 0
           git commit -m "chore: update tender state [skip ci]"
-          git pull --rebase origin "${GITHUB_REF_NAME}" || true
-          git push
+          # GitHub intermittently answers pushes with "Internal Server Error";
+          # retry with backoff so the state isn't lost (lost state = the same
+          # tenders get emailed again next run).
+          for i in 1 2 3 4 5 6; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
+            echo "push failed (attempt $i), retrying in $((i*10))s..."; sleep $((i*10))
+          done
+          echo "::error::Could not save state after 6 attempts - next run may repeat some alerts"
+          exit 1
