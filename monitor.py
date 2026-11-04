@@ -71,7 +71,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "ar,en-US;q=0.9,en;q=0.8",
 }
-TIMEOUT = 45
+TIMEOUT = (15, 45)  # (connect, read) seconds - a blocked host fails in 15s, not 45
 STATE_RETENTION_DAYS = 400  # forget a fingerprint after this long unseen
 
 # Link texts that are site navigation, not tenders (normalized form)
@@ -318,7 +318,7 @@ def fetch_joneps_bulk(list_url: str, min_title_len: int) -> list:
         last = None
         for attempt, verify in [(1, True), (2, True), (3, False)]:
             try:
-                r = s.request(method, u, timeout=90, verify=verify, **kw)
+                r = s.request(method, u, timeout=(15, 90), verify=verify, **kw)
                 r.raise_for_status()
                 return r
             except Exception as e:  # noqa: BLE001
@@ -535,10 +535,22 @@ def run(dry_run: bool = False):
     state = {k: v for k, v in state.items() if k in known}
 
     matched, unmatched, errors = [], [], []
+    attempted = 0
 
     for src in sources:
         if not src.get("enabled", True):
             continue
+        # Fail fast if the network can't reach Jordan at all (e.g. a cloud
+        # runner outside Jordan being geo-blocked): don't spend an hour
+        # timing out on every site, and don't touch the state.
+        if attempted >= 4 and len(errors) == attempted:
+            print("\n[FATAL] The first 4 sources ALL failed to connect - this machine "
+                  "probably cannot reach Jordanian government sites (geo-blocking or "
+                  "network outage). Aborting without changing state.")
+            for n_, e_ in errors:
+                print(f"  - {n_}: {str(e_)[:160]}")
+            return 2
+        attempted += 1
         sid, name, url = src["id"], src["name"], src["url"]
         parser = PARSERS.get(src.get("parser", "generic"), parse_generic)
         print(f"[scan] {name} -> {url}")

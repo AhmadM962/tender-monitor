@@ -30,7 +30,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Self-test (offline, 38 checks) - stops here if the code is broken
-        run: python selftest.py
+        run: python -u selftest.py
 
       - name: Run monitor
         env:
@@ -39,7 +39,7 @@ jobs:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           EMAIL_TO: ${{ secrets.EMAIL_TO }}
-        run: python monitor.py
+        run: python -u monitor.py   # -u = stream the log live
 
       - name: Persist state (so we only alert on NEW tenders)
         run: |
